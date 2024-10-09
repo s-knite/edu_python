@@ -6,22 +6,22 @@ from inspect import signature
 #test data
 io_test_cases = [
     {
-        "inputs": ["Ada", "39"],
+        "inputs": ["Ada", "39"], #put inputs in list even if only 1 input
         "expected_output": "Hello, Ada!\n39 is soooo old!\n"
     },
     {
-        "inputs": ["Bob", "12"],
+        "inputs": ["Bob", "12"], #put inputs in list even if only 1 input
         "expected_output": "Hello, Bob!\n12 is soooo old!\n"
     }
 ]
 results = []
 func_test_cases = [
     {
-        "params" : [3,5],
+        "params" : [3,5], #put params in list even if only 1 param
         "expected" : 15 
     },
     {
-        "params" : [2.2,10],
+        "params" : [2.2,10], #put params in list even if only 1 param
         "expected" : 22 
     }
 ]
@@ -40,7 +40,7 @@ def test_io(func):
         with patch("builtins.input", side_effect=case["inputs"]), patch("sys.stdout", new=StringIO()) as fake_out:
             try:
                 func()
-            except StopIteration:
+            except StopIteration: #catches exception raised by running out of inputs
                 print("Too many input calls")
                 
         result = {
