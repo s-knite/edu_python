@@ -6,7 +6,7 @@ from inspect import signature
 #test io
 def test_io(func, test_cases):
     results = []
-    for case in io_test_cases:
+    for case in test_cases:
         with patch("builtins.input", side_effect=case["inputs"]), patch("sys.stdout", new=StringIO()) as fake_out:
             try:
                 func()
@@ -24,7 +24,7 @@ def test_io(func, test_cases):
 #test function with return
 def test_func(func, test_cases):
     results = []
-    for case in func_test_cases:
+    for case in test_cases:
         result = {
             "params" : case["params"],
             "expected" : case["expected"]
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         return a* b
 
     
-    results = test_func(func_to_test, io_test_cases)
+    results = test_func(func_to_test, func_test_cases)
     for result in results:
         if result["passed"]:
             print("Test passed")
@@ -81,7 +81,7 @@ if __name__ == '__main__':
             for key, value in result.items():
                 print(key,":", value)
             
-    results = test_io(io_to_test, func_test_cases)
+    results = test_io(io_to_test, io_test_cases)
     for result in results:
         if result["passed"]:
             print("Test passed")
