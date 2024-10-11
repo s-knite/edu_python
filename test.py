@@ -19,7 +19,6 @@ def test_io(func, test_cases):
             "passed": fake_out.getvalue().strip() == case["expected_output"].strip()
         }
         results.append(result)
-
 #test function with return
 def test_func(func, test_cases):
     for case in func_test_cases:
@@ -73,10 +72,16 @@ if __name__ == '__main__':
     
     test_func(func_to_test, io_test_cases)
     for result in results:
-        for key, value in result.items():
-            print(key,":", value)
+        if result["passed"]:
+            print("Test passed")
+        else:
+            for key, value in result.items():
+                print(key,":", value)
             
     test_io(io_to_test, func_test_cases)
     for result in results:
-        for key, value in result.items():
-            print(key,":", value)
+        if result["passed"]:
+            print("Test passed")
+        else:
+            for key, value in result.items():
+                print(key,":", value)
