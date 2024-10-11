@@ -5,6 +5,7 @@ from inspect import signature
 
 #test io
 def test_io(func, test_cases):
+    results = []
     for case in io_test_cases:
         with patch("builtins.input", side_effect=case["inputs"]), patch("sys.stdout", new=StringIO()) as fake_out:
             try:
@@ -19,8 +20,10 @@ def test_io(func, test_cases):
             "passed": fake_out.getvalue().strip() == case["expected_output"].strip()
         }
         results.append(result)
+    return results
 #test function with return
 def test_func(func, test_cases):
+    results = []
     for case in func_test_cases:
         result = {
             "params" : case["params"],
@@ -35,6 +38,7 @@ def test_func(func, test_cases):
             result["actual"] = "Error wrong number of parameters"
             result["passed"] = False
         results.append(result)
+    return results
 
 
 if __name__ == '__main__':
@@ -49,7 +53,6 @@ if __name__ == '__main__':
             "expected_output": "Hello, Bob!\n12 is soooo old!\n"
         }
     ]
-    results = []
     func_test_cases = [
         {
             "params" : [3,5], #put params in list even if only 1 param
@@ -70,7 +73,7 @@ if __name__ == '__main__':
         return a* b
 
     
-    test_func(func_to_test, io_test_cases)
+    results = test_func(func_to_test, io_test_cases)
     for result in results:
         if result["passed"]:
             print("Test passed")
@@ -78,10 +81,11 @@ if __name__ == '__main__':
             for key, value in result.items():
                 print(key,":", value)
             
-    test_io(io_to_test, func_test_cases)
+    results = test_io(io_to_test, func_test_cases)
     for result in results:
         if result["passed"]:
             print("Test passed")
         else:
             for key, value in result.items():
                 print(key,":", value)
+
