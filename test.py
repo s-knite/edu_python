@@ -89,3 +89,19 @@ if __name__ == '__main__':
             for key, value in result.items():
                 print(key,":", value)
 
+def html_results_table(data): 
+    """
+    requires data to be a list of dictionaries with at minimum the keys for "test name" and "passed"
+    """
+    html = "<style>table,th,td {border-collapse: collapse; border: 1px solid;text-align: center;}td, th{padding:5px;}</style>"
+    html += "<table>"
+    html += "<tr><th>Test Name</th><th>Outcome</th><tr>"
+    for d in data:
+        html += "<tr >"
+        html += f"<td> {d['test name']}</td>"
+        html += "<td "
+        html += 'style = "background-color:Aquamarine;">' if d["passed"] else 'style = "background-color:LightCoral;">' 
+        html += "pass </td>" if d["passed"] else "fail </td>"
+        html += "</tr>"
+    html += "</table>"
+    return html
