@@ -3,6 +3,7 @@ from unittest.mock import patch
 from io import StringIO
 from inspect import signature
 import pandas as pd
+from IPython import get_ipython
 
 # example_cases = [
 #     {
@@ -52,21 +53,7 @@ def run_test(f,test):
     result["passed"] = False   
   return result
 
-def pre_test(f_name, debug = False):
-  """checks function with name exists and gets a reference to that function"""
-  if debug:
-    print(globals().keys())
-  if f_name in globals():
-    f = globals()[f_name]
-    print("Function found\n")
-    return f
-  else:
-    print(f"Function not found with name {f_name}")
-    print("\033[1;31mAborting tests\033[0;30m")
-
-
-from IPython import get_ipython
-def pre_test_alt(f_name):
+def pre_test(f_name):
     """Checks if a function with the given name exists in the user's namespace."""
     user_ns = get_ipython().user_ns
     if f_name in user_ns and callable(user_ns[f_name]):
