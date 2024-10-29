@@ -93,22 +93,14 @@ def highlight_passed(val):
 
 def run_all(f_name,test_cases):
   """
-    To display results styled_results must be declared in the global scope
-    before calling run all and must be the final line of code in a colab cell
-    not in a code block (e.g. not in an if statement)
-
-    e.g.
-    styled_results = None
-    run_all("Calculate",Tests)
-    styled_results
   """
-  global styled_results
   func = pre_test(f_name)
   if func:
     results = run_tests(func,test_cases)
     # for result in results:
     #   print(result)
     styled_results = post_test(results)
+    return styled_results
 
 # styled_results = None
 # run_all("example_function", example_cases)
