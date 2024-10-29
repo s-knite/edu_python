@@ -3,7 +3,6 @@ from unittest.mock import patch
 from io import StringIO
 from inspect import signature
 import pandas as pd
-import inspect
 
 # example_cases = [
 #     {
@@ -65,15 +64,17 @@ def pre_test(f_name, debug = False):
     print(f"Function not found with name {f_name}")
     print("\033[1;31mAborting tests\033[0;30m")
 
+
+from IPython import get_ipython
 def pre_test_alt(f_name):
-    """checks function with name exists and gets a reference to that function"""
-    for frame in inspect.stack():  # Iterate through the call stack
-        for name, obj in inspect.getmembers(frame[0]):
-            if name == f_name and inspect.isfunction(obj):
-                print("Function found\n")
-                return obj
-    print(f"Function not found with name {f_name}")
-    print("\033[1;31mAborting tests\033[0;30m")
+    """Checks if a function with the given name exists in the user's namespace."""
+    user_ns = get_ipython().user_ns
+    if f_name in user_ns and callable(user_ns[f_name]):
+        print("Function found\n")
+        return user_ns[f_name]
+    else:
+        print(f"Function not found with name {f_name}")
+        print("\033[1;31mAborting tests\033[0;30m")
 
 def run_tests(f,tests):
   """Loops through all test cases, tests should be a list of dictionaries"""
