@@ -7,19 +7,25 @@ from IPython import get_ipython
 
 # example_cases = [
 #     {
-#       "test_name": "Example",
-#       "params": [1,2,3],
-#       "e_out": "6",
-#       "e_return": 10,
-#     }
-#   ]
+#       "test_name": "A",
+#       "inputs": ["Ada"],
+#       "e_out": "Hello, Ada!",
+#     },
+#     {
+#       "test_name": "B",
+#       "inputs": ["Bob"],
+#       "e_out": "Hello, Bob!",
+#     },
+#     {
+#       "test_name": "C",
+#       "inputs": [""],
+#       "e_out": "Hello, !",
+#     },
+# ]
 
-# def example_function(a,b,c):
-#   # num = int(input("Enter first num\n> "))
-#   # num += int(input("Enter second num\n> "))
-#   # num += int(input("Enter third num\n> "))
-#   print(a+b+c)
-#   return 10
+# def example_function():
+#   name = input("Enter name")
+#   print(f"Hello, {name}!")
 
 def run_test(f,test):
   """
@@ -37,8 +43,8 @@ def run_test(f,test):
     try:
       a_return = f(*test["params"])
     except StopIteration: #catches exception raised by running out of inputs
-      a_return = None
-  if a_return == None:
+      a_return = StopIteration
+  if a_return == StopIteration:
     print("Too many input calls")
   result["a_return"] = a_return
   result["a_out"] = fake_out.getvalue().strip()
@@ -100,6 +106,8 @@ def run_all(f_name,test_cases):
   func = pre_test(f_name)
   if func:
     results = run_tests(func,test_cases)
+    # for result in results:
+    #   print(result)
     styled_results = post_test(results)
 
 # styled_results = None
