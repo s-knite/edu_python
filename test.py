@@ -21,7 +21,12 @@ import pandas as pd
 #   return 10
 
 def run_test(f,test):
-  result = test.copy()
+  """
+    Runs a test simulating inputs and capturing print statements,
+    compares expected outputs and expected returns if they exist
+    Test case must include at lease one of expected return or expected out
+  """
+  result = test.copy() #mainly used for debugging
   sig = signature(f)
   if len(sig.parameters) != len(test["params"]):
     print("Number of paramaters does not match expected\nAborting Tests")
@@ -36,13 +41,19 @@ def run_test(f,test):
     print("Too many input calls")
   result["a_return"] = a_return
   result["a_out"] = fake_out.getvalue().strip()
-  if test["e_out"] == result["a_out"] and a_return == test["e_return"]:
-    result["passed"] = True
-  else:
+  result["passed"] = True
+  #will only test against outputs if expected output in test case
+  #otherwise will ignore outputs
+  if "e_out" in test.keys() and test["e_out"] != result["a_out"]:
     result["passed"] = False
+  #will only test against return if expected return in test case
+  #otherwise will ignore return value
+  if "e_return" in test.keys() and a_return != test["e_return"]:
+    result["passed"] = False   
   return result
 
 def pre_test(f_name):
+  """checks function with name exists and gets a reference to that function"""
   if f_name in globals():
     f = globals()[f_name]
     print("Function found\n")
@@ -53,6 +64,7 @@ def pre_test(f_name):
 
 
 def run_tests(f,tests):
+  """Loops through all test cases, tests should be a list of dictionaries"""
   results = []
   for test in tests:
     if "params" not in test.keys():
@@ -63,6 +75,7 @@ def run_tests(f,tests):
   return results
 
 def post_test(results):
+  """uses pandas to style results table"""
   df = pd.DataFrame(results, columns=["test_name","passed"])
   styled_df = df.style.map(highlight_passed, subset=['passed'])
   return styled_df
@@ -92,7 +105,6 @@ def run_all(f_name,test_cases):
 # styled_results = None
 # run_all("example_function", example_cases)
 # styled_results
-
 
 # def html_results_table(data): 
 #     """
