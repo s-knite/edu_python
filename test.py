@@ -52,8 +52,10 @@ def run_test(f,test):
     result["passed"] = False   
   return result
 
-def pre_test(f_name):
+def pre_test(f_name, debug = False):
   """checks function with name exists and gets a reference to that function"""
+  if debug:
+    print(globals().keys())
   if f_name in globals():
     f = globals()[f_name]
     print("Function found\n")
