@@ -2,106 +2,111 @@ import unittest
 from unittest.mock import patch
 from io import StringIO
 from inspect import signature
+import pandas as pd
 
-#test io
-def test_io(func, test_cases):
-    results = []
-    for case in test_cases:
-        with patch("builtins.input", side_effect=case["inputs"]), patch("sys.stdout", new=StringIO()) as fake_out:
-            try:
-                func()
-            except StopIteration: #catches exception raised by running out of inputs
-                print("Too many input calls")
-                
-        result = {
-            "inputs": case["inputs"],
-            "expected_output": case["expected_output"].strip(),
-            "actual_output": fake_out.getvalue().strip(),
-            "passed": fake_out.getvalue().strip() == case["expected_output"].strip()
-        }
-        results.append(result)
-    return results
-#test function with return
-def test_func(func, test_cases):
-    results = []
-    for case in test_cases:
-        result = {
-            "params" : case["params"],
-            "expected" : case["expected"]
-        }
-        if func.__code__.co_argcount == len(case["params"]):
-            actual = func(*case["params"])
-            result["actual"] = actual
-            result["passed"] = actual == case["expected"]
+# example_cases = [
+#     {
+#       "test_name": "Example",
+#       "params": [1,2,3],
+#       "e_out": "6",
+#       "e_return": 10,
+#     }
+#   ]
 
-        else:
-            result["actual"] = "Error wrong number of parameters"
-            result["passed"] = False
-        results.append(result)
-    return results
+# def example_function(a,b,c):
+#   # num = int(input("Enter first num\n> "))
+#   # num += int(input("Enter second num\n> "))
+#   # num += int(input("Enter third num\n> "))
+#   print(a+b+c)
+#   return 10
+
+def run_test(f,test):
+  result = test.copy()
+  sig = signature(f)
+  if len(sig.parameters) != len(test["params"]):
+    print("Number of paramaters does not match expected\nAborting Tests")
+    result["passed"] = False
+    return result
+  with patch("builtins.input", side_effect=test["inputs"]), patch("sys.stdout", new=StringIO()) as fake_out:
+    try:
+      a_return = f(*test["params"])
+    except StopIteration: #catches exception raised by running out of inputs
+      a_return = None
+  if a_return == None:
+    print("Too many input calls")
+  result["a_return"] = a_return
+  result["a_out"] = fake_out.getvalue().strip()
+  if test["e_out"] == result["a_out"] and a_return == test["e_return"]:
+    result["passed"] = True
+  else:
+    result["passed"] = False
+  return result
+
+def pre_test(f_name):
+  if f_name in globals():
+    f = globals()[f_name]
+    print("Function found\n")
+    return f
+  else:
+    print(f"Function not found with name {f_name}")
+    print("\033[1;31mAborting tests\033[0;30m")
 
 
-if __name__ == '__main__':
-    #example test data
-    io_test_cases = [
-        {
-            "inputs": ["Ada", "39"], #put inputs in list even if only 1 input
-            "expected_output": "Hello, Ada!\n39 is soooo old!\n"
-        },
-        {
-            "inputs": ["Bob", "12"], #put inputs in list even if only 1 input
-            "expected_output": "Hello, Bob!\n12 is soooo old!\n"
-        }
-    ]
-    func_test_cases = [
-        {
-            "params" : [3,5], #put params in list even if only 1 param
-            "expected" : 15 
-        },
-        {
-            "params" : [2.2,10], #put params in list even if only 1 param
-            "expected" : 22 
-        }
-    ]
-    #example test functions
-    def io_to_test():
-        name = input("Please enter name")
-        print(f"Hello, {name}!")
-        age = input("How old are you?")
-        print(f"{age} is soooo old!")
-    def func_to_test(a,b):
-        return a* b
+def run_tests(f,tests):
+  results = []
+  for test in tests:
+    if "params" not in test.keys():
+      test["params"] = [] #adds empty list for cases that don't use params
+    if "inputs" not in test.keys():
+      test["inputs"] = [] #adds empty list for cases that don't use input
+    results.append(run_test(f,test))
+  return results
 
-    
-    results = test_func(func_to_test, func_test_cases)
-    for result in results:
-        if result["passed"]:
-            print("Test passed")
-        else:
-            for key, value in result.items():
-                print(key,":", value)
-            
-    results = test_io(io_to_test, io_test_cases)
-    for result in results:
-        if result["passed"]:
-            print("Test passed")
-        else:
-            for key, value in result.items():
-                print(key,":", value)
+def post_test(results):
+  df = pd.DataFrame(results, columns=["test_name","passed"])
+  styled_df = df.style.map(highlight_passed, subset=['passed'])
+  return styled_df
 
-def html_results_table(data): 
-    """
-    requires data to be a list of dictionaries with at minimum the keys for "test name" and "passed"
-    """
-    html = "<style>table,th,td {border-collapse: collapse; border: 1px solid;text-align: center;}td, th{padding:5px;}</style>"
-    html += "<table>"
-    html += "<tr><th>Test Name</th><th>Outcome</th><tr>"
-    for d in data:
-        html += "<tr >"
-        html += f"<td> {d['test name']}</td>"
-        html += "<td "
-        html += 'style = "background-color:Aquamarine;">' if d["passed"] else 'style = "background-color:LightCoral;">' 
-        html += "pass </td>" if d["passed"] else "fail </td>"
-        html += "</tr>"
-    html += "</table>"
-    return html
+def highlight_passed(val):
+  """Highlights 'passed' column: green for True, red for False."""
+  color = 'green' if val else 'red'
+  return f'background-color: {color}'
+
+def run_all(f_name,test_cases):
+  """
+    To display results styled_results must be declared in the global scope
+    before calling run all and must be the final line of code in a colab cell
+    not in a code block (e.g. not in an if statement)
+
+    e.g.
+    styled_results = None
+    run_all("Calculate",Tests)
+    styled_results
+  """
+  global styled_results
+  func = pre_test(f_name)
+  if func:
+    results = run_tests(func,test_cases)
+    styled_results = post_test(results)
+
+# styled_results = None
+# run_all("example_function", example_cases)
+# styled_results
+
+
+# def html_results_table(data): 
+#     """
+#     requires data to be a list of dictionaries with at minimum the keys for "test name" and "passed"
+#     """
+#     html = "<style>table,th,td {border-collapse: collapse; border: 1px solid;text-align: center;}td, th{padding:5px;}</style>"
+#     html += "<table>"
+#     html += "<tr><th>Test Name</th><th>Outcome</th><tr>"
+#     for d in data:
+#         html += "<tr >"
+#         html += f"<td> {d['test name']}</td>"
+#         html += "<td "
+#         html += 'style = "background-color:Aquamarine;">' if d["passed"] else 'style = "background-color:LightCoral;">' 
+#         html += "pass </td>" if d["passed"] else "fail </td>"
+#         html += "</tr>"
+#     html += "</table>"
+#     return html
