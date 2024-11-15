@@ -63,7 +63,7 @@ def pre_test(f_name):
     """Checks if a function with the given name exists in the user's namespace."""
     user_ns = get_ipython().user_ns
     if f_name in user_ns and callable(user_ns[f_name]):
-        print("Function found\n")
+        print(f"Function {f_name} found\n")
         return user_ns[f_name]
     else:
         print(f"Function not found with name {f_name}")
